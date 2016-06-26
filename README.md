@@ -1,13 +1,13 @@
 # Search_Eng
 Simple search eangine application in Python with SQLite database
 
-A simple search engine in Python:
+
 Here I work on building a suite of Python programs to replicate a simplified search engine process
 
-Process flow chart:
+<em>Process flow chart:</em><br>
 Diagrams mapping out the processes involved in application, and forming the basis for the suite of application programs, can be found on my blog here: http://deborahroberts.info/2016/06/simple-search-engine-in-python/
 
-Program walk-throughs:
+<em>Program walk-throughs:</em>
 
 1A. CRAWL (Crawler110.py)
 * import libraries
@@ -56,7 +56,7 @@ Program walk-throughs:
 * (OPTIONAL) add data visualisation dashboard element on web browser reporting
 * (OPTIONAL) add mechanism for user feedback on quality/relevancy of returned results and write to database DB02 WordHits (plus feedback into adaptation of Authority algorithm employed by Indexer
 
-SQLite data models:
+<em>SQLite data models:</em>
  The following data model assumes four databases but in practice fewer would be needed if searching a well-bounded, hence smaller, part of the web. For simplicity, points specified as 'optional' in the above process walk-throughs have not been reflected in these data models.
 
 DB01: RawData
@@ -161,10 +161,12 @@ Junction Table: Score
 
 Sorting: (1) For each document in DB02:WordHits, all fields in Table: Doc are updated (straight copy). Note that Doc.id is a unique integer field but is not auto-incrementing - instead the same doc ID as used in DB02:WordHits is updated here; (2) For each word in DB02:Hits, the word is checked to see if already contained in DB03:Lexicon. If not, the new word is added to DB03:Lexicon and the value of DB03:Lex.id is returned and updated to Word.id. Note this is a unique integer field but is not auto-incrementing - instead the same word ID as used in Lexicon (DB03:Lex.id) is updated here; (3) For each instance of a word appearing in a document, Doc.id and Word.id are added to the Junction Table: Score, to fields Score.Doc_id and Score.Word_id respectively, together with the relevancy and authority scores from DB02:WordHits for that word and doc; (4) The Junction Table: Score is kept sorted based on document authority scoring AND word relevancy scoring. This sorted database will form the basic database for search queries (although search functions can also be modified as required by the user, resulting in modified select commands to this database).
 
-Ways to develop:
+<em>Ways to Improve:</em>
 There are many ways to develop or enhance a simple and well-bounded search engine so I won't list them all here. Key things I think should be included initially (for the kind of application I have in mind to build) would be:
 * Include advanced searching functionality. This should be relatively simple, based on Boolean operators within an SQL database SELECT query. This could be extended to include dynamic user-specified ranking on screen (e.g. order by relevancy or by authority or by relevancy+authority);
 * Return some kind of summary of the resulting page or document along with the link. This could be quite simple (returning a simple text summary, restricted to the first 100 characters, say) or could be far more complex (synthesising and summarising the most important points within the page or document - obviously this is far more advanced, and well beyond the scope of the initial search engine application);
 * Review options for including more advanced forms of data visualisation of returned search results - effectively creating a data visualisation dashboard to help display the top n search results in a more relevant, engaging and easily-accessible format;
-* Build in the Tagging Engine functionality so the application can double up as a word tagger for blog posts, etc. In practice this would probably mean adding a refined version of the Tagging Engine as a stand-alone web-based application executable through the same web portal as the main search engine application;
+* Build in the Tagging Engine functionality so the application can double up as a word tagger for blog posts, etc. In practice this would probably mean adding a refined version of the Tagging Engine as a stand-alone web-based application executable through the same web portal as the main search engine application.
+
+<em>Future Developments:</em>
 * Data Visualisations: An obvious improvement on the current search engine application is to add user-configurable visualisation options to the web browser displaying the user's search results, in the manner of a dashboard rather than just an ordered list of links with text snippets. One possibility is to make use of, D3.js - a powerful yet easy-to-use and free visualisation tool in JavaScript - pulling in data dumped from Python to a JSON file. At this point I haven't worked with D3.js and the visualisation aspect of my search engine application is out of scope for the time being, but will be revisited later when time (and skill level) allows. But here's a simple description of the process: the D3.js website gives a number of visualisation tools one can use; download the relevant JavaScript program to create that data visualisation; ensure your JSON data file matches the same required data input format; within your HTML for your web page, load in the D3.js library in HTML, load in the JSON data file then run the relevant JavaScript program to activate your visualisation in-browser. Note there appear to be compatibility issues with some versions of Internet Explorer, although running in FireFox gave me no problems; this will need to be ironed out in future.
