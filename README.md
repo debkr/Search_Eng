@@ -9,7 +9,7 @@ Diagrams mapping out the processes involved in application, and forming the basi
 
 Program walk-throughs:
 
-1. CRAWL (Crawler110.py)
+1A. CRAWL (Crawler110.py)
 * import libraries
 * create SQL database DB01 RawData
 * user-defined URL (start)
@@ -42,7 +42,7 @@ Program walk-throughs:
 * reorder data by wordID not docID [ONE wordID is contained in MANY docIDs]
 * store data (ordered by wordID) with URLs and word lists + attributes + relevancy and authority scores
 
-3. SEARCH
+3A. SEARCH
 * import libraries
 * user-defined search criteria entered through command line interface
 * or (IDEALLY) web browser > saved as JSON file
