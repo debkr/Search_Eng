@@ -3,6 +3,12 @@
 # A simple URL Crawler & Link Resolver with database storage and
 # options to crawl within home domain only or to roam more freely
 
+#################################################################
+###                                                           ###
+###   PLEASE UPDATE HARD CODED URL & HOME DOMAIN (L99, L133)  ###
+###                                                           ###
+#################################################################
+
 
 # import libraries
 import urllib
@@ -90,7 +96,7 @@ def start():
         url = None; path = None ; strt = 'no'
     except:
         if len(inp) < 1 :
-            url = 'http://deborahroberts.info/'
+            url = 'http://www.domainname.com/'          ### UPDATE DEFAULT URL HERE ###
             num = 1 ; path = 0 ; strt = 'yes'
         else:
             url = inp; num = 1 ; path = 0 ; strt = 'yes'
@@ -124,7 +130,7 @@ def stay():
 def homedomain():
     inp = raw_input('Enter home domain (RTN for default): ')
     if len(inp) < 1 :
-        homedomain = 'deborahroberts.info'
+        homedomain = 'domainname.com'                   ### UPDATE DEFAULT HOME DOMAIN HERE ###
     else:
         homedomain = inp
     print 'Home domain:', homedomain
@@ -255,7 +261,7 @@ def throw(item):
     return thrw
 
 
-################################################
+#################################################################
 
 # create SQL database DB01 RawData
 conn = sqlite3.connect('DB01RawData.db')
@@ -271,7 +277,7 @@ homedomain = homedomain()
 if stay != 'yes' :
     exclude(curs)
 
-# MAIN
+# main program
 while True:
     result = start()
     if result['inp'].lower() == 'q' : quit()
@@ -378,4 +384,3 @@ while True:
     print 'All retrieved'
 
 quit()
-
