@@ -383,4 +383,5 @@ while True:
 
     print 'All retrieved'
 
+curs.close()
 quit()
