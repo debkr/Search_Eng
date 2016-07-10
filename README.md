@@ -10,7 +10,7 @@ Diagrams mapping out the processes involved in application, and forming the basi
 
 #####<em>Program walk-throughs:</em><br>
 
-1A. CRAWL (Crawler110.py)
+**1A. CRAWL (Crawler110.py)**
 * import libraries
 * create SQL database DB01 RawData
 * user-defined URL (start)
@@ -24,7 +24,7 @@ Diagrams mapping out the processes involved in application, and forming the basi
 * (INTERMITANTLY) check links for link pairings and update data back to DB01
 * kill-switch built in to allow program shutdown as required
 
-2A. INDEX
+**2A. INDEX (Indexer110.py)**
 * import libraries
 * create SQL database DB02 WordHits
 * retrieve data from DB01 into Indexer
@@ -34,7 +34,7 @@ Diagrams mapping out the processes involved in application, and forming the basi
 * for each docID, read data, process Relevancy Score and write back to DB02
 * for each docID, read data, process Authority Score and write back to DB02
 
-2B. SORT
+**2B. SORT**
 * import libraries
 * create SQL database DB03 Lexicon (if not already exists)
 * create SQL database DB04 OrderedWords
@@ -43,7 +43,7 @@ Diagrams mapping out the processes involved in application, and forming the basi
 * reorder data by wordID not docID [ONE wordID is contained in MANY docIDs]
 * store data (ordered by wordID) with URLs and word lists + attributes + relevancy and authority scores
 
-3A. SEARCH
+**3A. SEARCH**
 * import libraries
 * user-defined search criteria entered through command line interface
 * or (IDEALLY) web browser > saved as JSON file
@@ -60,43 +60,43 @@ Diagrams mapping out the processes involved in application, and forming the basi
 #####<em>SQLite data models:</em><br>
  The following data model assumes four databases but in practice fewer would be needed if searching a well-bounded, hence smaller, part of the web. For simplicity, points specified as 'optional' in the above process walk-throughs have not been reflected in these data models.
 
-DB01: RawData
+**DB01: RawData**
 
-Table: Doc
- id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
- Url_id  INTEGER,
- fetch   DATE,
- err     INTEGER,
- raw     TEXT,
- read    INTEGER
+Table: Doc  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ Url_id  INTEGER,  
+ fetch   DATE,  
+ err     INTEGER,  
+ raw     TEXT,  
+ read    INTEGER  
 
-Table: Url
- id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
- url     TEXT UNIQUE,
- home    TEXT,
- excl    TEXT,
- crwl    INTEGER,
- fetch   INTEGER,
- path    INTEGER
+Table: Url  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ url     TEXT UNIQUE,  
+ home    TEXT,  
+ excl    TEXT,  
+ crwl    INTEGER,  
+ fetch   INTEGER,  
+ path    INTEGER  
 
-Table: Link
- id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
- link    TEXT UNIQUE,
- anchor  TEXT,
- Doc_id  INTEGER
+Table: Link  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ link    TEXT UNIQUE,  
+ anchor  TEXT,  
+ Doc_id  INTEGER  
 
-Junction Table: Pair
- Doc_id  INTEGER,
- Link_id INTEGER,
- PRIMARY KEY (Doc_id, Link_id)
+Junction Table: Pair  
+ Doc_id  INTEGER,  
+ Link_id INTEGER,  
+ PRIMARY KEY (Doc_id, Link_id)  
 
-Table: Home
- id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
- domain  TEXT UNIQUE
+Table: Home  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ domain  TEXT UNIQUE  
 
-Table: Excl
- id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
- domain TEXT
+Table: Excl  
+ id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ domain TEXT  
 
 Crawler: (1) The starting URL is added to Table: Url and fields Url.crwl and Url.fetch are set to 0 to indicate these actions have not yet occurred; (2) Url.path is set to 0 to indicate this is the Crawler's starting point (level zero) in the link pathway; (3) When the URL is crawled, Url.id is added to Doc.url_id and Url.crawl is updated to 1; (4) When data is fetched from the URL, it's stored in Doc.raw, a timestamp is added to Doc.fetch and Url.fetch is updated to 1; (5) (DEVELOPMENT TO BE ADDED) Check all raw HTML data parsed from URLs - where error, update err flag to Table: Doc.
 
@@ -106,35 +106,56 @@ Link Server: (1) Reviews the list of URLs in Table: Url and, where crwl = 0, ret
 
 Link Pairing: Link pairings (i.e. cross-citations) can be handled by querying the Junction Table: Pair, therefore a separate attribute or database field has not been created. Link pairings were updated by the URL Resolver.
 
-DB02: WordHits
+**DB02: WordHits**
 
-Table: Doc
+Table: Doc  
  id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
- url     TEXT UNIQUE,
- fetch   DATE,
- authy   INTEGER
+ DB1_Doc_id   INTEGER UNIQUE,  
+ url     TEXT UNIQUE,  
+ fetch   DATE,  
+ authy   INTEGER,  
+ year    INTEGER,  
+ mnth    INTEGER,  
+ ttl     TEXT  
 
-Table: Hits
- id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
- Doc_id  INTEGER,
- word   TEXT UNIQUE,
- hits    INTEGER,
- pos     INTEGER,
- size    INTEGER,
- caps    INTEGER,
- bold    INTEGER,
- domn    INTEGER,
- titl    INTEGER,
- anchr   INTEGER,
- relev   INTEGER
+Table: Hits  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ DB1_Doc_id  INTEGER,  
+ word    TEXT,  
+ hits    INTEGER,  
+ pos     INTEGER,  
+ size    INTEGER,  
+ caps    INTEGER,  
+ bold    INTEGER,  
+ inurl   INTEGER,  
+ inttl   INTEGER,  
+ inanch  INTEGER,  
+ relev   INTEGER  
+ 
+ Table: Cats  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ DB1_Doc_id  INTEGER,  
+ cat     TEXT UNIQUE,  
+ parent  TEXT,  
+ child   TEXT  
 
-Indexer: (1) Extract a new document from DB01: RawData (where DB01:Doc.read = 0 or null), update fields Doc.id, Doc.url and Doc.fetch from DB01 for that document, and update DB01:Doc.read to 1 to indicate that doc has now been read/processed by the Indexer; (2) Read and parse content in the doc, collating all words and their total hits; (3) Update Doc.id to Hits.Doc_id, add each of the found words and their total number of hits to Hits.word and Hits.hits respectively; (4) Count the hits of each word in various key positions in the doc (position, larger size font (header tags), capitalised, bold, within URL or domain name, within doc title, within anchor text of referring URL) and update counts to relevant fields in Table: Hits.
+Table: Tags  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ DB1_Doc_id  INTEGER,  
+ tag     TEXT UNIQUE  
+
+Table: Auth  
+ id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,  
+ domain  TEXT UNIQUE,  
+ auth    INTEGER  
+
+Indexer: (1) Extract a new document from DB01: RawData (where DB01:Doc.read = 0 or null), update fields Doc.id, Doc.url and Doc.fetch from DB01 for that document, and update DB01:Doc.read to 1 to indicate that doc has now been read/processed by the Indexer; (2) If URL relates to categories or tags, extract and update categories/tags to database then proceed to next URL, else (for blog posts) extract year/month and title and update to database; (3) (Blog posts only) read and parse content in the doc, collating all words and their total hits; (4) Update DB01:Doc.id to Hits.DB1_Doc_id, add each of the found words and their total number of hits to Hits.word and Hits.hits respectively; (5) Count the hits of each word in various key positions in the doc (position, font size (as per header tags), capitalised, bold, within URL (or domain name if preferred), within doc title, within anchor text of referring URL) and update counts/scores to relevant fields in Table: Hits.
 
 Relevancy Scoring: (1) For each word hit within the web page or document, calculate relevancy score based on weighted averages (with all hit attributes scored at pre-defined weightings, and with total hits (field Hits.hits) capped at a pre-defined level); (2) Update relevancy score to Hits.relev for each of the words in the document.
 
-Authority Scoring: (1) Calculate authority scoring of the web page or document based on pre-defined scoring system; (2) Update authority score to Doc.authy.
+Authority Scoring: (1) Set authority scoring of the web page or document based on user-entry for that domain; (2) Update authority score to Doc.authy and update domain and authority score to Auth.domain and Auth.auth respectively. (3) Alternatively, user may enter authority score manually for each URL (currently hard-coded into program but commented out). (Program may be updated at a later date to calculate authority score based on a pre-defined scoring system.)
 
-DB03: Lexicon
+**DB03: Lexicon**
 
 Table: Lex
  id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -142,7 +163,7 @@ Table: Lex
 
 The Lexicon is maintained as a full list of unique words relevant to the area of web, or knowledge domain, being indexed for searching. New words found by the Indexer are added to the Lexicon by the Sorter. The unique word ID (Lex.id) will be mirrored across from DB03 to DB04:OrderedWords (see below).
 
-DB04: OrderedWords
+**DB04: OrderedWords**
 
 Table: Word
  id      INTEGER NOT NULL PRIMARY KEY UNIQUE,
